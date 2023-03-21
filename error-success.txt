@@ -1,0 +1,21 @@
+smOS error and success codes
+
+Success codes:
+
+sc01 - bootloader started
+sc02 - kernel file loaded
+sc03 - kernel header verified
+sc04 - kernel loaded
+sc05 - graphics output protocol located (gop)
+sc06 - font found
+
+
+Error codes:
+
+ec01 - kernel not found or could not be loaded
+ec02 - kernel format is bad
+ec03 - failed to locate graphics output protocol (gop)
+ec04 - failed to load a font
+ec05 - page fault
+ec06 - double fault
+ec07 - general protection fault
