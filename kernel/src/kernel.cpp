@@ -7,7 +7,7 @@ extern "C" void _start(BootInfo* bootInfo){
     PageTableManager* pageTableManager = kernelInfo.pageTableManager;
 
     // Begin printing things here
-    GlobalRenderer->Print("                ___  ____");
+    GlobalRenderer->Print("                 ___  ____");
     GlobalRenderer->Print(" ___ _ __ ___  / _ \\/ ___|");
     GlobalRenderer->Print("/ __| '_ ` _ \\| | | \\___ \\ ");
     GlobalRenderer->Print("\\__ \\ | | | | | |_| |___) |");

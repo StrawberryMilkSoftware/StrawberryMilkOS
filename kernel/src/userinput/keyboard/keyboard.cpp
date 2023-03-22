@@ -25,10 +25,20 @@ void HandleKeyboard(uint8_t scancode){
             GlobalRenderer->PutChar(' ');
             return;
         case BackSpace:
-           GlobalRenderer->ClearChar();
-           return;
-
-        // Add arrow keys!!!!!!!
+            GlobalRenderer->ClearChar();
+            return;
+        case LeftArrow:
+            GlobalRenderer->CursorPosition.x -= 8;
+            return;
+        case RightArrow:
+            GlobalRenderer->CursorPosition.x += 8;
+            return;
+        case UpArrow:
+            GlobalRenderer->CursorPosition.y -= 16;
+            return;
+        case DownArrow:
+            GlobalRenderer->CursorPosition.y += 16;
+            return;
     }
 
     char ascii = QWERTYKeyboard::Translate(scancode, isLeftShiftPressed | isRightShiftPressed);
