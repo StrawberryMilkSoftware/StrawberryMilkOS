@@ -8,6 +8,7 @@ sc03 - kernel header verified
 sc04 - kernel loaded
 sc05 - graphics output protocol located (gop)
 sc06 - font found
+sc07 - ahci init
 
 
 Error codes:

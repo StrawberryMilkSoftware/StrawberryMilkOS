@@ -3,9 +3,9 @@
 #include "../interrupts/idt.h"
 #include "../interrupts/interrupts.h"
 #include "../io/io.h"
+#include "../memory/heap/heap.h"
 
 KernelInfo kernelInfo; 
-PageTableManager pageTableManager = NULL;
 void PrepareMemory(BootInfo* bootInfo){
     uint64_t mMapEntries = bootInfo->mMapSize / bootInfo->mMapDescSize;
 
@@ -20,22 +20,21 @@ void PrepareMemory(BootInfo* bootInfo){
     PageTable* PML4 = (PageTable*)GlobalAllocator.RequestPage();
     memset(PML4, 0, 0x1000);
 
-    pageTableManager = PageTableManager(PML4);
+    g_PageTableManager = PageTableManager(PML4);
 
     for (uint64_t t = 0; t < GetMemorySize(bootInfo->mMap, mMapEntries, bootInfo->mMapDescSize); t+= 0x1000){
-        pageTableManager.MapMemory((void*)t, (void*)t);
+        g_PageTableManager.MapMemory((void*)t, (void*)t);
     }
 
     uint64_t fbBase = (uint64_t)bootInfo->framebuffer->BaseAddress;
     uint64_t fbSize = (uint64_t)bootInfo->framebuffer->BufferSize + 0x1000;
     GlobalAllocator.LockPages((void*)fbBase, fbSize/ 0x1000 + 1);
     for (uint64_t t = fbBase; t < fbBase + fbSize; t += 4096){
-        pageTableManager.MapMemory((void*)t, (void*)t);
+        g_PageTableManager.MapMemory((void*)t, (void*)t);
     }
 
     asm ("mov %0, %%cr3" : : "r" (PML4));
 
-    kernelInfo.pageTableManager = &pageTableManager;
 }
 
 IDTR idtr;
@@ -56,10 +55,19 @@ void PrepareInterrupts(){
     SetIDTGate((void*)GPFault_Handler, 0xD, IDT_TA_InterruptGate, 0x08);
     SetIDTGate((void*)KeyboardInt_Handler, 0x21, IDT_TA_InterruptGate, 0x08);
     SetIDTGate((void*)MouseInt_Handler, 0x2C, IDT_TA_InterruptGate, 0x08);
+    SetIDTGate((void*)PITInt_Handler, 0x20, IDT_TA_InterruptGate, 0x08);
  
     asm ("lidt %0" : : "m" (idtr));
 
     RemapPIC();
+}
+
+void PrepareACPI(BootInfo* bootInfo){
+    ACPI::SDTHeader* xsdt = (ACPI::SDTHeader*)(bootInfo->rsdp->XSDTAddress);
+
+    ACPI::MCFGHeader* mcfg = (ACPI::MCFGHeader*)ACPI::FindTable(xsdt, (char*)"MCFG");
+
+    PCI::EnumeratePCI(mcfg);
 }
 
 BasicRenderer r = BasicRenderer(NULL, NULL);
@@ -76,11 +84,15 @@ KernelInfo InitKernel(BootInfo* bootInfo){
 
     memset(bootInfo->framebuffer->BaseAddress, 0, bootInfo->framebuffer->BufferSize);
 
+    InitHeap((void*)0x0000100000000000, 0x10);
+
     PrepareInterrupts();
 
     InitPS2Mouse();
 
-    outb(PIC1_DATA, 0b11111001);
+    PrepareACPI(bootInfo);
+
+    outb(PIC1_DATA, 0b11111000);
     outb(PIC2_DATA, 0b11101111);
 
     asm ("sti");

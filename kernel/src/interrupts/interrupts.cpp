@@ -3,6 +3,7 @@
 #include "../io/io.h"
 #include "../userinput/keyboard/keyboard.h"
 #include "../userinput/mouse/mouse.h"
+#include "../scheduling/pit/pit.h"
 
 __attribute__((interrupt)) void PageFault_Handler(interrupt_frame* frame){
     Panic("Page Fault", "ec05");
@@ -31,6 +32,11 @@ __attribute__((interrupt)) void MouseInt_Handler(interrupt_frame* frame){
     HandlePS2Mouse(mouseData);
 
     PIC_EndSlave();
+}
+
+__attribute__((interrupt)) void PITInt_Handler(interrupt_frame* frame){
+    PIT::Tick();
+    PIC_EndMaster();
 }
 
 void PIC_EndMaster(){

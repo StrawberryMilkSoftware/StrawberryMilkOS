@@ -11,6 +11,7 @@ class BasicRenderer{
     Framebuffer* TargetFramebuffer;
     PSF1_FONT* PSF1_Font;
     uint32_t MouseCursorBuffer[16 * 16];
+    uint32_t MouseCursorBufferAfter[16 * 16];
     unsigned int Color;
     unsigned int ClearColor;
     void Print(const char* str);
